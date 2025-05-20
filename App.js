@@ -3,10 +3,12 @@ const express = require("express");
 require("dotenv").config();
 const mongoose = require("mongoose");
 const userRoutes = require("./userRoutes.js");
+const cors = require("cors");
+
 const App = express();
 
 App.use(express.json());
-
+App.use(cors());
 const URL = process.env.URL || "mongodb+srv://mongoself:factorise@etiene.jjrlz2m.mongodb.net/mongo"
 
 mongoose.connect(URL, {

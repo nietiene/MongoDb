@@ -2,17 +2,19 @@
 const express = require("express");
 const User = require("./user.js");
 const router = express.Router();
+const bcrypt = require("bcrypt");
 
 // Retieving All Users In Document
 
 router.get('/', async(req, res) => {
 
     try {
-
     const users = await User.find();
-    if (users) {
+    if (users.length > 0) {
         res.status(200).json({message: "Users: ", users});
-    } 
+    }  else {
+        res.status(404).json({message: "No user in system"})
+    }
 
 } catch (err) {
     res.status(404).json("No User In System");
@@ -35,10 +37,31 @@ router.get('/:id', async(req, res) => {
 }
 });
 
-router.post('/', async(req, res) => {
+// Login I will continue at school
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await user.findOne({ email });
+    if (!user) return res.status(404).json({message: "No User Found"});
+    const IsMatch = await bcrypt.compare(password, user.password);
+    if(!IsMatch) return res.status(200).json("Login Successfully");
+  } catch (err) {
+    res.status(500).json({message:"Server Error", error: err.message});
+  }
+    
+})
+
+router.post('/add', async(req, res) => {
     try {
-    const newUser = await User.create(req.body);
-    res.status(201).json(newUser);
+    //   console.log("Received data", req.body);
+      const salt = await bcrypt.genSalt(10);
+      const HashedPass = await bcrypt.hash(req.body.password, salt);
+      const NewUser = {
+           ...req.body,
+           password: HashedPass
+      }
+      const newUser = await User.create(NewUser);
+      res.status(201).json(newUser);
 
     } catch(err) {
         res.status(404).json({message:"Data Not Inseted",Error: err.message});
